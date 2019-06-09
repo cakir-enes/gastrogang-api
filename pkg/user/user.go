@@ -2,9 +2,9 @@ package user
 
 // User struct
 type User struct {
-	ID       uint   `json:"id"`
-	Name     string `json:"name"`
-	Password string `json:"password"`
+	ID       uint   `json:"id" binding:"required"`
+	Name     string `json:"name binding:"required""`
+	Password string `json:"password binding:"required""`
 }
 
 type Repository interface {

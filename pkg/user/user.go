@@ -18,7 +18,7 @@ type Token struct {
 	jwt.StandardClaims
 }
 
-type Service interface {
+type Repository interface {
 	FindUserByID(id uint) (*User, error)
 	SaveUser(user *User) error
 	GetAllUsers() ([]User, error)

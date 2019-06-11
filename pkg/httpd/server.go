@@ -27,6 +27,7 @@ func (s *server) Start() {
 func (s *server) initRoutes() {
 	v1 := s.router.Group("/api/v1")
 	{
+		v1.POST("/register", registerUser(s.userRepo))
 		v1.GET("/ping", func(c *gin.Context) {
 			c.JSON(http.StatusOK, gin.H{"msg": "pong"})
 		})

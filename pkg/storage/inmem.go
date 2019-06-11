@@ -25,6 +25,16 @@ func (s *inMemory) FindRecipeByID(id uint) (*recipe.Recipe, error) {
 	return nil, fmt.Errorf("Recipe with id: %d not found", id)
 }
 
+func (s *inMemory) FindRecipesByAuthorID(id uint) ([]recipe.Recipe, error) {
+	recipes := []recipe.Recipe{}
+	for _, r := range s.recipes {
+		if r.AuthorID == id {
+			recipes = append(recipes, r)
+		}
+	}
+	return recipes, nil
+}
+
 func (s *inMemory) FindRecipesByAuthor(name string) ([]recipe.Recipe, error) {
 	usr, err := s.FindUserByName(name)
 	if err != nil {

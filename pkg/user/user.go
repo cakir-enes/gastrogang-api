@@ -1,6 +1,9 @@
 package user
 
-import "github.com/dgrijalva/jwt-go"
+import (
+	"github.com/dgrijalva/jwt-go"
+	"golang.org/x/crypto/bcrypt"
+)
 
 // User struct
 type User struct {
@@ -23,4 +26,17 @@ type Repository interface {
 	SaveUser(user *User) error
 	GetAllUsers() ([]User, error)
 	DeleteUserByID(id uint) error
+}
+
+func (u *User) HashPwAndGenerateToken() (string, string) {
+	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
+	u.Password = string(hashedPassword)
+
+	//Create new JWT token for the newly registered account
+	tk := &Token{UserId: u.ID}
+	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tk)
+	tokenString, _ := token.SignedString([]byte("secr3tbabyitssecret"))
+	u.Token = tokenString
+
+	return string(hashedPassword), tokenString
 }

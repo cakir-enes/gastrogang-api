@@ -26,10 +26,16 @@ func (s *server) Start() {
 
 func (s *server) initRoutes() {
 	v1 := s.router.Group("/api/v1")
+	v1.Use(user.JwtAuthentication())
 	{
 		v1.POST("/register", registerUser(s.userRepo))
+		v1.POST("/login", loginUser(s.userRepo))
 		v1.GET("/ping", func(c *gin.Context) {
-			c.JSON(http.StatusOK, gin.H{"msg": "pong"})
+			id, exists := c.Get("user")
+			if !exists {
+				c.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": "pong", "author": "FAIL"})
+			}
+			c.JSON(http.StatusOK, gin.H{"msg": "pong", "author": id})
 		})
 	}
 }

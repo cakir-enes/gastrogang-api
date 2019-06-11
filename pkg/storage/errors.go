@@ -3,4 +3,5 @@ package storage
 import "errors"
 
 var ConnectionFailed = errors.New("Connection failed.")
-var UsernameExists = errors.New("Username already exists")
+var UserAlreadyExists = errors.New("Username already exists")
+var UserDoesntExist = errors.New("User not found")

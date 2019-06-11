@@ -26,15 +26,17 @@ type Repository interface {
 	SaveUser(user *User) error
 	GetAllUsers() ([]User, error)
 	DeleteUserByID(id uint) error
+	FindUserByName(name string) (*User, error)
 }
 
-func (u *User) HashPwAndGenerateToken() {
+func (u *User) HashPassword() {
 	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
 	u.Password = string(hashedPassword)
+}
 
-	//Create new JWT token for the newly registered account
+func (u *User) GenerateToken() {
 	tk := &Token{UserId: u.ID}
 	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tk)
 	tokenString, _ := token.SignedString([]byte("secr3tbabyitssecret"))
-	u.Token = tokenString
+	u.Token = tokenString //Store the token in the response
 }

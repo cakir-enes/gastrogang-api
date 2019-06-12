@@ -1,7 +1,9 @@
 package httpd
 
 import (
+	"errors"
 	"fmt"
+	"gastrogang-api/pkg/recipe"
 	"gastrogang-api/pkg/storage"
 	"gastrogang-api/pkg/user"
 	"github.com/gin-gonic/gin"
@@ -19,6 +21,19 @@ var checkPassword = func(encrypted, normal string) bool {
 		return false
 	}
 	return true
+}
+
+var extractIdFromCtx = func(c *gin.Context) (uint, error) {
+	id, exists := c.Get("user")
+	if !exists {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"status": "FAIL", "msg": "Something went wrong"})
+		return 0, errors.New("user doesnt exist in the context")
+	}
+	id, ok := id.(uint)
+	if !ok {
+		return 0, errors.New("Couldnt parse user id")
+	}
+	return id.(uint), nil
 }
 
 func registerUser(repo user.Repository) gin.HandlerFunc {
@@ -75,5 +90,44 @@ func loginUser(repo user.Repository) gin.HandlerFunc {
 		usr.GenerateToken()
 		usr.Password = ""
 		c.JSON(http.StatusOK, usr)
+	}
+}
+
+func getAllRecipes(repo recipe.Repository) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		id, err := extractIdFromCtx(c)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, failResp(err.Error()))
+			return
+		}
+		recipes, err := repo.FindRecipesByAuthorID(id)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, failResp(err.Error()))
+			return
+		}
+		c.JSON(http.StatusOK, recipes)
+	}
+}
+
+func saveRecipe(repo recipe.Repository) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		id, err := extractIdFromCtx(c)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, failResp(err.Error()))
+			return
+		}
+		var json recipe.Recipe
+		err = c.BindJSON(&json)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, failResp(err.Error()))
+			return
+		}
+		json.AuthorID = id
+		err = repo.SaveRecipe(&json)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, failResp(err.Error()))
+			return
+		}
+		c.JSON(http.StatusOK, json)
 	}
 }

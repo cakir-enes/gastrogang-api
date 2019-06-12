@@ -2,11 +2,11 @@ package recipe
 
 // Recipe model
 type Recipe struct {
-	ID       uint     `json:"id" binding:"required"`
-	Name     string   `json:"name binding:"required""`
-	Steps    []string `json:"steps binding:"required""`
-	Details  string   `json:"details"`
-	AuthorID uint     `json:"authorid" binding:"required"`
+	ID       uint     `json:"id"`
+	Name     string   `json:"name" binding:"required"`
+	Steps    []string `json:"steps" binding:"required"`
+	Details  string   `json:"details" binding:"required"`
+	AuthorID uint     `json:"authorid"`
 }
 
 type Repository interface {

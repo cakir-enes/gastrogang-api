@@ -9,6 +9,7 @@ import (
 type inMemory struct {
 	recipes []recipe.Recipe
 	users   []user.User
+	idCount uint
 }
 
 func NewInMemoryStorage() *inMemory {
@@ -23,6 +24,16 @@ func (s *inMemory) FindRecipeByID(id uint) (*recipe.Recipe, error) {
 		}
 	}
 	return nil, fmt.Errorf("Recipe with id: %d not found", id)
+}
+
+func (s *inMemory) FindRecipesByAuthorID(id uint) ([]recipe.Recipe, error) {
+	recipes := []recipe.Recipe{}
+	for _, r := range s.recipes {
+		if r.AuthorID == id {
+			recipes = append(recipes, r)
+		}
+	}
+	return recipes, nil
 }
 
 func (s *inMemory) FindRecipesByAuthor(name string) ([]recipe.Recipe, error) {
@@ -82,9 +93,15 @@ func (s *inMemory) FindUserByName(name string) (*user.User, error) {
 			return &user, nil
 		}
 	}
-	return nil, fmt.Errorf("User with name: %s not found", name)
+	return nil, UserDoesntExist
 }
 func (s *inMemory) SaveUser(user *user.User) error {
+	_, err := s.FindUserByName(user.Name)
+	if err != UserDoesntExist {
+		return UserAlreadyExists
+	}
+	user.ID = s.idCount + 1
+	s.idCount = s.idCount + 1
 	s.users = append(s.users, *user)
 	return nil
 }

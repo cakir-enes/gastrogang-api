@@ -11,7 +11,7 @@ type Recipe struct {
 
 type Repository interface {
 	FindRecipeByID(id uint) (*Recipe, error)
-	FindRecipesByAuthor(name string) ([]Recipe, error)
+	FindRecipesByAuthorID(id uint) ([]Recipe, error)
 	SaveRecipe(recipe *Recipe) error
 	DeleteRecipeByID(id uint) error
 	UpdateRecipe(recipe *Recipe) error

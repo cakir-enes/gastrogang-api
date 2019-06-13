@@ -3,7 +3,6 @@ package httpd
 import (
 	"gastrogang-api/pkg/recipe"
 	"gastrogang-api/pkg/user"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -30,12 +29,12 @@ func (s *server) initRoutes() {
 	{
 		v1.POST("/register", registerUser(s.userRepo))
 		v1.POST("/login", loginUser(s.userRepo))
-		v1.GET("/ping", func(c *gin.Context) {
-			id, exists := c.Get("user")
-			if !exists {
-				c.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": "pong", "author": "FAIL"})
-			}
-			c.JSON(http.StatusOK, gin.H{"msg": "pong", "author": id})
-		})
+
+		v1.GET("/recipes", getAllRecipes(s.recipeRepo))
+		v1.POST("/recipes", saveRecipe(s.recipeRepo))
+
+		v1.GET("/recipes/:id", getRecipeByID(s.recipeRepo))
+		v1.DELETE("/recipes/:id", deleteRecipeByID(s.recipeRepo))
+		v1.PUT("/recipes/:id", updateRecipeByID(s.recipeRepo))
 	}
 }

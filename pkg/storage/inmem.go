@@ -7,9 +7,10 @@ import (
 )
 
 type inMemory struct {
-	recipes []recipe.Recipe
-	users   []user.User
-	idCount uint
+	recipes   []recipe.Recipe
+	users     []user.User
+	userCount uint
+	recCount  uint
 }
 
 func NewInMemoryStorage() *inMemory {
@@ -51,6 +52,17 @@ func (s *inMemory) FindRecipesByAuthor(name string) ([]recipe.Recipe, error) {
 }
 
 func (s *inMemory) SaveRecipe(recipe *recipe.Recipe) error {
+	recipes, err := s.FindRecipesByAuthorID(recipe.AuthorID)
+	if err != nil {
+		return err
+	}
+	for _, rec := range recipes {
+		if rec.Name == recipe.Name {
+			return RecipeAlreadyExists
+		}
+	}
+	recipe.ID = s.recCount + 1
+	s.recCount = s.recCount + 1
 	s.recipes = append(s.recipes, *recipe)
 	return nil
 }
@@ -67,14 +79,17 @@ func (s *inMemory) DeleteRecipeByID(id uint) error {
 }
 
 func (s *inMemory) UpdateRecipe(recipe *recipe.Recipe) error {
-	rec, err := s.FindRecipeByID(recipe.ID)
-	if err != nil {
-		return err
+	var idx = -1
+	for i, r := range s.recipes {
+		if r.ID == recipe.ID {
+			idx = i
+		}
 	}
-	rec.Name = recipe.Name
-	rec.Steps = recipe.Steps
-	rec.Details = recipe.Details
-	rec.AuthorID = recipe.AuthorID
+	s.recipes[idx].Name = recipe.Name
+	s.recipes[idx].Steps = recipe.Steps
+	s.recipes[idx].Details = recipe.Details
+	s.recipes[idx].Ingredients = recipe.Ingredients
+
 	return nil
 }
 
@@ -100,8 +115,8 @@ func (s *inMemory) SaveUser(user *user.User) error {
 	if err != UserDoesntExist {
 		return UserAlreadyExists
 	}
-	user.ID = s.idCount + 1
-	s.idCount = s.idCount + 1
+	user.ID = s.userCount + 1
+	s.userCount = s.userCount + 1
 	s.users = append(s.users, *user)
 	return nil
 }

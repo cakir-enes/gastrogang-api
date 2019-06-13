@@ -1,17 +1,15 @@
 package httpd
 
 import (
+	"errors"
 	"fmt"
 	"gastrogang-api/pkg/storage"
 	"gastrogang-api/pkg/user"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
-	"net/http"
 )
-
-var failResp = func(msg string) interface{} {
-	return gin.H{"status": "Fail", "message": msg}
-}
 
 var checkPassword = func(encrypted, normal string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(encrypted), []byte(normal))
@@ -19,6 +17,19 @@ var checkPassword = func(encrypted, normal string) bool {
 		return false
 	}
 	return true
+}
+
+var extractIdFromCtx = func(c *gin.Context) (uint, error) {
+	id, exists := c.Get("user")
+	if !exists {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"status": "FAIL", "msg": "Something went wrong"})
+		return 0, errors.New("user doesnt exist in the context")
+	}
+	id, ok := id.(uint)
+	if !ok {
+		return 0, errors.New("Couldnt parse user id")
+	}
+	return id.(uint), nil
 }
 
 func registerUser(repo user.Repository) gin.HandlerFunc {
@@ -49,12 +60,12 @@ func registerUser(repo user.Repository) gin.HandlerFunc {
 
 func loginUser(repo user.Repository) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var usrJson user.User
-		err := c.BindJSON(&usrJson)
+		var json user.User
+		err := c.BindJSON(&json)
 		if err != nil {
 			fmt.Println(err)
 		}
-		usr, err := repo.FindUserByName(usrJson.Name)
+		usr, err := repo.FindUserByName(json.Name)
 		if err != nil {
 			switch err {
 			case storage.UserDoesntExist:
@@ -66,7 +77,7 @@ func loginUser(repo user.Repository) gin.HandlerFunc {
 			}
 			return
 		}
-		match := checkPassword(usr.Password, usrJson.Password)
+		match := checkPassword(usr.Password, json.Password)
 		if !match {
 			c.AbortWithStatusJSON(http.StatusBadRequest, failResp("Invalid credentials"))
 			return

@@ -66,12 +66,12 @@ func registerUser(repo user.Repository) gin.HandlerFunc {
 
 func loginUser(repo user.Repository) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var usrJson user.User
-		err := c.BindJSON(&usrJson)
+		var json user.User
+		err := c.BindJSON(&json)
 		if err != nil {
 			fmt.Println(err)
 		}
-		usr, err := repo.FindUserByName(usrJson.Name)
+		usr, err := repo.FindUserByName(json.Name)
 		if err != nil {
 			switch err {
 			case storage.UserDoesntExist:
@@ -83,7 +83,7 @@ func loginUser(repo user.Repository) gin.HandlerFunc {
 			}
 			return
 		}
-		match := checkPassword(usr.Password, usrJson.Password)
+		match := checkPassword(usr.Password, json.Password)
 		if !match {
 			c.AbortWithStatusJSON(http.StatusBadRequest, failResp("Invalid credentials"))
 			return
@@ -113,31 +113,11 @@ func getAllRecipes(repo recipe.Repository) gin.HandlerFunc {
 
 func getRecipeByID(repo recipe.Repository) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		userId, err := extractIdFromCtx(c)
+		rec, err := findRecipeCheckAuthor(c, repo)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, failResp(err.Error()))
 			return
 		}
-		id, err := strconv.ParseUint(c.Param("id"), 10, 32)
-		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, failResp("Something went wrong"))
-			return
-		}
-		recipeId := uint(id)
-		recipe, err := repo.FindRecipeByID(recipeId)
-		if err != nil {
-			if err == storage.ConnectionFailed {
-				c.AbortWithStatusJSON(http.StatusInternalServerError, failResp("Something went wrong"))
-				return
-			}
-			c.AbortWithStatusJSON(http.StatusBadRequest, failResp(err.Error()))
-			return
-		}
-		if recipe.AuthorID != userId {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, failResp("Recipe is not public"))
-			return
-		}
-		c.JSON(http.StatusOK, recipe)
+		c.JSON(http.StatusOK, rec)
 	}
 }
 
@@ -166,31 +146,63 @@ func saveRecipe(repo recipe.Repository) gin.HandlerFunc {
 
 func deleteRecipeByID(repo recipe.Repository) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		userId, err := extractIdFromCtx(c)
+		recipe, err := findRecipeCheckAuthor(c, repo)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, failResp(err.Error()))
 			return
 		}
+		repo.DeleteRecipeByID(recipe.ID)
+		c.Status(http.StatusOK)
+	}
+}
+
+func updateRecipeByID(repo recipe.Repository) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		_, err := findRecipeCheckAuthor(c, repo)
+		if err != nil {
+			return
+		}
+		var json recipe.Recipe
 		id, err := strconv.ParseUint(c.Param("id"), 10, 32)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, failResp("Something went wrong"))
 			return
 		}
 		recipeId := uint(id)
-		recipe, err := repo.FindRecipeByID(recipeId)
+		json.ID = recipeId
+		err = c.BindJSON(&json)
 		if err != nil {
-			if err == storage.ConnectionFailed {
-				c.AbortWithStatusJSON(http.StatusInternalServerError, failResp("Something went wrong"))
-				return
-			}
-			c.AbortWithStatusJSON(http.StatusBadRequest, failResp("Recipe doesnt exist"))
+			c.AbortWithStatusJSON(http.StatusBadRequest, failResp(err.Error()))
 			return
 		}
-		if recipe.AuthorID != userId {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, failResp("It's not even your recipe"))
-			return
-		}
-		repo.DeleteRecipeByID(recipeId)
+		repo.UpdateRecipe(&json)
 		c.Status(http.StatusOK)
 	}
+}
+
+func findRecipeCheckAuthor(c *gin.Context, repo recipe.Repository) (*recipe.Recipe, error) {
+	userId, err := extractIdFromCtx(c)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, failResp(err.Error()))
+		return nil, err
+	}
+	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, failResp("Something went wrong"))
+		return nil, err
+	}
+	recipeId := uint(id)
+	recipe, err := repo.FindRecipeByID(recipeId)
+	if err != nil {
+		if err == storage.ConnectionFailed {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, failResp("Something went wrong"))
+			return nil, err
+		}
+		c.AbortWithStatusJSON(http.StatusBadRequest, failResp("Recipe doesnt exist"))
+		return nil, err
+	}
+	if recipe.AuthorID != userId {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, failResp("It's not even your recipe"))
+		return nil, errors.New("Unauthorized")
+	}
+	return recipe, nil
 }

@@ -5,6 +5,7 @@
 *.dylib
 .idea
 *.http
+.vscode
 # Test binary, built with `go test -c`
 *.test
 

@@ -79,14 +79,17 @@ func (s *inMemory) DeleteRecipeByID(id uint) error {
 }
 
 func (s *inMemory) UpdateRecipe(recipe *recipe.Recipe) error {
-	rec, err := s.FindRecipeByID(recipe.ID)
-	if err != nil {
-		return err
+	var idx = -1
+	for i, r := range s.recipes {
+		if r.ID == recipe.ID {
+			idx = i
+		}
 	}
-	rec.Name = recipe.Name
-	rec.Steps = recipe.Steps
-	rec.Details = recipe.Details
-	rec.AuthorID = recipe.AuthorID
+	s.recipes[idx].Name = recipe.Name
+	s.recipes[idx].Steps = recipe.Steps
+	s.recipes[idx].Details = recipe.Details
+	s.recipes[idx].Ingredients = recipe.Ingredients
+
 	return nil
 }
 

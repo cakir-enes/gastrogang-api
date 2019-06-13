@@ -163,3 +163,34 @@ func saveRecipe(repo recipe.Repository) gin.HandlerFunc {
 		c.JSON(http.StatusOK, json)
 	}
 }
+
+func deleteRecipeByID(repo recipe.Repository) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		userId, err := extractIdFromCtx(c)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, failResp(err.Error()))
+			return
+		}
+		id, err := strconv.ParseUint(c.Param("id"), 10, 32)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, failResp("Something went wrong"))
+			return
+		}
+		recipeId := uint(id)
+		recipe, err := repo.FindRecipeByID(recipeId)
+		if err != nil {
+			if err == storage.ConnectionFailed {
+				c.AbortWithStatusJSON(http.StatusInternalServerError, failResp("Something went wrong"))
+				return
+			}
+			c.AbortWithStatusJSON(http.StatusBadRequest, failResp("Recipe doesnt exist"))
+			return
+		}
+		if recipe.AuthorID != userId {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, failResp("It's not even your recipe"))
+			return
+		}
+		repo.DeleteRecipeByID(recipeId)
+		c.Status(http.StatusOK)
+	}
+}

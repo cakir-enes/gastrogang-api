@@ -6,9 +6,11 @@ import (
 	"gastrogang-api/pkg/recipe"
 	"gastrogang-api/pkg/storage"
 	"gastrogang-api/pkg/user"
+	"net/http"
+	"strconv"
+
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
-	"net/http"
 )
 
 var failResp = func(msg string) interface{} {
@@ -106,6 +108,36 @@ func getAllRecipes(repo recipe.Repository) gin.HandlerFunc {
 			return
 		}
 		c.JSON(http.StatusOK, recipes)
+	}
+}
+
+func getRecipeByID(repo recipe.Repository) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		userId, err := extractIdFromCtx(c)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, failResp(err.Error()))
+			return
+		}
+		id, err := strconv.ParseUint(c.Param("id"), 10, 32)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, failResp("Something went wrong"))
+			return
+		}
+		recipeId := uint(id)
+		recipe, err := repo.FindRecipeByID(recipeId)
+		if err != nil {
+			if err == storage.ConnectionFailed {
+				c.AbortWithStatusJSON(http.StatusInternalServerError, failResp("Something went wrong"))
+				return
+			}
+			c.AbortWithStatusJSON(http.StatusBadRequest, failResp(err.Error()))
+			return
+		}
+		if recipe.AuthorID != userId {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, failResp("Recipe is not public"))
+			return
+		}
+		c.JSON(http.StatusOK, recipe)
 	}
 }
 

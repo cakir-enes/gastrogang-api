@@ -3,7 +3,8 @@
 *.dll
 *.so
 *.dylib
-
+.idea
+*.http
 # Test binary, built with `go test -c`
 *.test
 

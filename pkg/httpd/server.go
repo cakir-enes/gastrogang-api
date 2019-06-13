@@ -32,6 +32,7 @@ func (s *server) initRoutes() {
 		v1.POST("/login", loginUser(s.userRepo))
 		v1.GET("/recipes", getAllRecipes(s.recipeRepo))
 		v1.POST("/recipes", saveRecipe(s.recipeRepo))
+		v1.GET("/recipes/:id", getRecipeByID(s.recipeRepo))
 		v1.GET("/ping", func(c *gin.Context) {
 			id, exists := c.Get("user")
 			if !exists {

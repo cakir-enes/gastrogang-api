@@ -56,6 +56,9 @@ func saveRecipe(repo recipe.Repository) gin.HandlerFunc {
 		json.AuthorID = id
 		err = repo.SaveRecipe(&json)
 		if err != nil {
+			if err == storage.RecipeAlreadyExists {
+				c.AbortWithStatusJSON(http.StatusUnprocessableEntity, failResp(err.Error()))
+			}
 			c.AbortWithStatusJSON(http.StatusInternalServerError, failResp(err.Error()))
 			return
 		}

@@ -14,7 +14,7 @@ type Database struct {
 }
 
 func NewPgDB() *Database {
-	db, err := gorm.Open("postgres", os.Getenv("DB_CONNECTION_URL"))
+	db, err := gorm.Open("postgres", os.Getenv("DATABASE_URL"))
 
 	if err != nil {
 		log.Fatal("Cant connect to DB ", err.Error())

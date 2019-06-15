@@ -1,2 +1,1 @@
-./cmd
-web: gastrogang-api -port $PORT
+web: bin/gastrogang-api

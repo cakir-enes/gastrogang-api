@@ -1,6 +1,8 @@
 package user
 
 import (
+	"os"
+
 	"github.com/dgrijalva/jwt-go"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -37,6 +39,6 @@ func (u *User) HashPassword() {
 func (u *User) GenerateToken() {
 	tk := &Token{UserId: u.ID}
 	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tk)
-	tokenString, _ := token.SignedString([]byte("secr3tbabyitssecret"))
+	tokenString, _ := token.SignedString([]byte(os.Getenv("SECRET_KEY")))
 	u.Token = tokenString //Store the token in the response
 }

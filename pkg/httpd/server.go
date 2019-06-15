@@ -3,6 +3,7 @@ package httpd
 import (
 	"gastrogang-api/pkg/recipe"
 	"gastrogang-api/pkg/user"
+	"os"
 
 	"github.com/gin-gonic/gin"
 )
@@ -20,7 +21,7 @@ func NewServer(userRepo user.Repository, recipeRepo recipe.Repository) *server {
 }
 
 func (s *server) Start() {
-	s.router.Run(":8080")
+	s.router.Run(":" + os.Getenv("PORT"))
 }
 
 func (s *server) initRoutes() {

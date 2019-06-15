@@ -1,13 +1,18 @@
 package recipe
 
+import (
+	"github.com/jinzhu/gorm"
+	"github.com/lib/pq"
+)
+
 // Recipe model
 type Recipe struct {
-	ID          uint     `json:"id"`
-	Name        string   `json:"name"`
-	Steps       []string `json:"steps"`
-	Ingredients []string `json:"ingredients"`
-	Details     string   `json:"details"`
-	AuthorID    uint     `json:"authorid"`
+	gorm.Model
+	Name        string         `json:"name"`
+	Steps       pq.StringArray `json:"steps" gorm:"type:varchar(100)[]"`
+	Ingredients pq.StringArray `json:"ingredients" gorm:"type:varchar(100)[]"`
+	Details     string         `json:"details"`
+	AuthorID    uint           `json:"authorid"`
 }
 
 type Repository interface {

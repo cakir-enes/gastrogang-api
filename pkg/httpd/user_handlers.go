@@ -46,7 +46,7 @@ func registerUser(repo user.Repository) gin.HandlerFunc {
 			case storage.ConnectionFailed:
 				c.AbortWithStatusJSON(http.StatusInternalServerError, failResp(err.Error()))
 			case storage.UserAlreadyExists:
-				c.AbortWithStatusJSON(http.StatusBadRequest, failResp(err.Error()))
+				c.AbortWithStatusJSON(http.StatusUnprocessableEntity, failResp(err.Error()))
 			default:
 				c.AbortWithStatusJSON(http.StatusInternalServerError, failResp("Something went wrong"))
 			}
@@ -79,7 +79,7 @@ func loginUser(repo user.Repository) gin.HandlerFunc {
 		}
 		match := checkPassword(usr.Password, json.Password)
 		if !match {
-			c.AbortWithStatusJSON(http.StatusBadRequest, failResp("Invalid credentials"))
+			c.AbortWithStatusJSON(http.StatusUnauthorized, failResp("Invalid credentials"))
 			return
 		}
 		c.Set("user", usr.ID)

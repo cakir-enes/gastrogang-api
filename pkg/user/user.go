@@ -1,13 +1,16 @@
 package user
 
 import (
+	"github.com/jinzhu/gorm"
+	"os"
+
 	"github.com/dgrijalva/jwt-go"
 	"golang.org/x/crypto/bcrypt"
 )
 
 // User struct
 type User struct {
-	ID       uint   `json:"id"`
+	gorm.Model
 	Name     string `json:"name"`
 	Password string `json:"password"`
 	Token    string `json:"token";sql:"-"`
@@ -37,6 +40,6 @@ func (u *User) HashPassword() {
 func (u *User) GenerateToken() {
 	tk := &Token{UserId: u.ID}
 	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tk)
-	tokenString, _ := token.SignedString([]byte("secr3tbabyitssecret"))
+	tokenString, _ := token.SignedString([]byte(os.Getenv("SECRET_KEY")))
 	u.Token = tokenString //Store the token in the response
 }

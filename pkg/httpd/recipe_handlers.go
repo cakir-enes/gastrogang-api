@@ -56,6 +56,9 @@ func saveRecipe(repo recipe.Repository) gin.HandlerFunc {
 		json.AuthorID = id
 		err = repo.SaveRecipe(&json)
 		if err != nil {
+			if err == storage.RecipeAlreadyExists {
+				c.AbortWithStatusJSON(http.StatusUnprocessableEntity, failResp(err.Error()))
+			}
 			c.AbortWithStatusJSON(http.StatusInternalServerError, failResp(err.Error()))
 			return
 		}
@@ -117,11 +120,11 @@ func findRecipeCheckAuthor(c *gin.Context, repo recipe.Repository) (*recipe.Reci
 			c.AbortWithStatusJSON(http.StatusInternalServerError, failResp("Something went wrong"))
 			return nil, err
 		}
-		c.AbortWithStatusJSON(http.StatusBadRequest, failResp("Recipe doesnt exist"))
+		c.AbortWithStatusJSON(http.StatusNotFound, failResp("Recipe doesnt exist"))
 		return nil, err
 	}
 	if recipe.AuthorID != userId {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, failResp("It's not even your recipe"))
+		c.AbortWithStatusJSON(http.StatusForbidden, failResp("It's not even your recipe"))
 		return nil, errors.New("Unauthorized")
 	}
 	return recipe, nil

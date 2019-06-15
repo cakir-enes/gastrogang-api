@@ -2,6 +2,7 @@ package user
 
 import (
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/dgrijalva/jwt-go"
@@ -38,7 +39,7 @@ func JwtAuthentication() gin.HandlerFunc {
 		tk := &Token{}
 
 		token, err := jwt.ParseWithClaims(tokenPart, tk, func(token *jwt.Token) (interface{}, error) {
-			return []byte("secr3tbabyitssecret"), nil
+			return []byte(os.Getenv("SECRET_KEY")), nil
 		})
 
 		if err != nil {

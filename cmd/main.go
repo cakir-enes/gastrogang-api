@@ -13,6 +13,7 @@ func main() {
 	if err != nil {
 		log.Println("Error loading .env file")
 	}
+
 	repo := postgres.NewPgDB()
 	defer repo.Close()
 	server := httpd.NewServer(repo, repo)

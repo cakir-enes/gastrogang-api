@@ -1,1 +1,1 @@
-web: bin/gastrogang-api
+web: bin/cmd/gastrogang-api

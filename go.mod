@@ -10,4 +10,5 @@ require (
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/lib/pq v1.1.1
 	golang.org/x/crypto v0.0.0-20190325154230-a5d413f7728c
+	google.golang.org/appengine v1.4.0
 )

@@ -1,8 +1,10 @@
 package httpd
 
 import (
+	"context"
 	"gastrogang-api/pkg/recipe"
 	"gastrogang-api/pkg/user"
+	"google.golang.org/appengine/log"
 	"os"
 
 	"github.com/gin-gonic/gin"
@@ -21,7 +23,10 @@ func NewServer(userRepo user.Repository, recipeRepo recipe.Repository) *server {
 }
 
 func (s *server) Start() {
-	s.router.Run(":" + os.Getenv("PORT"))
+	err := s.router.Run(":" + os.Getenv("PORT"))
+	if err != nil {
+		log.Errorf(context.Background(), "Cant bind port\n")
+	}
 }
 
 func (s *server) initRoutes() {

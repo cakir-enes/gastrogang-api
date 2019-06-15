@@ -1,6 +1,7 @@
 package user
 
 import (
+	"github.com/jinzhu/gorm"
 	"os"
 
 	"github.com/dgrijalva/jwt-go"
@@ -9,7 +10,7 @@ import (
 
 // User struct
 type User struct {
-	ID       uint   `json:"id"`
+	gorm.Model
 	Name     string `json:"name"`
 	Password string `json:"password"`
 	Token    string `json:"token";sql:"-"`

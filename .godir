@@ -1,0 +1,2 @@
+./cmd
+web: gastrogang-api -port $PORT

@@ -1,0 +1,427 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "GastroGang API v1",
+    "version": "1.0.0",
+    "title": "GastroGang"
+  },
+  "basePath": "/api/v1",
+  "tags": [
+    {
+      "name": "user",
+      "description": "Operations about user"
+    },
+    {
+      "name": "recipe",
+      "description": "Operation about recipe"
+    }
+  ],
+  "schemes": [
+    "https",
+    "http"
+  ],
+  "securityDefinitions": {
+    "Bearer": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header"
+    }
+  },
+  "paths": {
+    "/register": {
+      "post": {
+        "tags": [
+          "user"
+        ],
+        "summary": "Register a new user",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "user",
+            "description": "User to create.",
+            "schema": {
+              "type": "object",
+              "required": [
+                "name",
+                "password"
+              ],
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "password": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "operationId": "register",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          },
+          "400": {
+            "description": "Invalid format"
+          },
+          "422": {
+            "description": "Duplicate user name error"
+          }
+        }
+      }
+    },
+    "/login": {
+      "post": {
+        "tags": [
+          "user"
+        ],
+        "summary": "Login",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "user",
+            "description": "User credentials",
+            "schema": {
+              "type": "object",
+              "required": [
+                "name",
+                "passwrod"
+              ],
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "password": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "operationId": "login",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          },
+          "400": {
+            "description": "Invalid format"
+          },
+          "401": {
+            "description": "Invalid credentials"
+          }
+        }
+      }
+    },
+    "/recipes/{id}": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Returns a user based on a single ID, if the user does not have access to the pet",
+        "summary": "Fetch recipe by ID",
+        "tags": [
+          "recipe"
+        ],
+        "operationId": "findRecipeByID",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of recipe to fetch",
+            "required": true,
+            "type": "integer",
+            "format": "uint"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Recipe",
+            "schema": {
+              "$ref": "#/definitions/Recipe"
+            }
+          },
+          "403": {
+            "description": "Recipe belongs to someone else"
+          }
+        }
+      },
+      "delete": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Returns a user based on a single ID, if the user does not have access to the pet",
+        "summary": "Fetch recipe by ID",
+        "tags": [
+          "recipe"
+        ],
+        "operationId": "deleteRecipeByID",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of recipe to fetch",
+            "required": true,
+            "type": "integer",
+            "format": "uint"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "403": {
+            "description": "Recipe belongs to someone else"
+          },
+          "404": {
+            "description": "Recipe doesnt exist"
+          }
+        }
+      },
+      "put": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "recipe"
+        ],
+        "summary": "Update recipe",
+        "description": "",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of recipe to fetch",
+            "required": true,
+            "type": "integer",
+            "format": "uint"
+          },
+          {
+            "in": "body",
+            "name": "recipe",
+            "description": "Recipe to save",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "steps": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "ingredients": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "details": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "operationId": "saveRecipe",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "description": "Invalid body format"
+          },
+          "403": {
+            "description": "Recipe belongs to someone else"
+          },
+          "422": {
+            "description": "Duplicate recipe name error, user already has a recipe with the same name."
+          }
+        }
+      }
+    },
+    "/recipes": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "recipe"
+        ],
+        "summary": "Find all recipes that a logged in user have",
+        "description": "",
+        "operationId": "fetchRecipes",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Recipe"
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "recipe"
+        ],
+        "summary": "Adds recipe to users recipes",
+        "description": "",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "recipe",
+            "description": "Recipe to save",
+            "schema": {
+              "type": "object",
+              "required": [
+                "name",
+                "ingredients",
+                "steps"
+              ],
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "steps": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "ingredients": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "details": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "operationId": "createRecipe",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "description": "Invalid body"
+          },
+          "422": {
+            "description": "Duplicate recipe name error, user already has a recipe with the same name."
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Recipe": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "uint"
+        },
+        "authorId": {
+          "type": "integer",
+          "format": "uint"
+        },
+        "name": {
+          "type": "string",
+          "format": "string"
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "details": {
+          "type": "string",
+          "format": "string"
+        },
+        "ingredients": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "User": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        },
+        "token": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer"
+        }
+      }
+    }
+  }
+}

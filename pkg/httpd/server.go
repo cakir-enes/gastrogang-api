@@ -5,6 +5,7 @@ import (
 	"gastrogang-api/pkg/recipe"
 	"gastrogang-api/pkg/user"
 	"google.golang.org/appengine/log"
+	"net/http"
 	"os"
 
 	"github.com/gin-gonic/gin"
@@ -30,6 +31,11 @@ func (s *server) Start() {
 }
 
 func (s *server) initRoutes() {
+	s.router.Static("/swagger", "cmd/swaggerui")
+	s.router.GET("/", func(c *gin.Context) {
+		c.Redirect(http.StatusPermanentRedirect, "/swagger")
+		c.Abort()
+	})
 	v1 := s.router.Group("/api/v1")
 	v1.Use(user.JwtAuthentication())
 	{

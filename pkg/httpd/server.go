@@ -4,6 +4,7 @@ import (
 	"context"
 	"gastrogang-api/pkg/recipe"
 	"gastrogang-api/pkg/user"
+	"github.com/gin-contrib/cors"
 	"google.golang.org/appengine/log"
 	"net/http"
 	"os"
@@ -32,11 +33,13 @@ func (s *server) Start() {
 
 func (s *server) initRoutes() {
 	s.router.Static("/swagger", "cmd/swaggerui")
+	s.router.Use(cors.Default())
 	s.router.GET("/", func(c *gin.Context) {
 		c.Redirect(http.StatusPermanentRedirect, "/swagger")
 		c.Abort()
 	})
 	v1 := s.router.Group("/api/v1")
+	v1.Use(cors.Default())
 	v1.Use(user.JwtAuthentication())
 	{
 		v1.POST("/register", registerUser(s.userRepo))

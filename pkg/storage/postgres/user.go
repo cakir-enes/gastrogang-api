@@ -40,6 +40,9 @@ func (s *Database) DeleteUserByID(id uint) error {
 
 func (s *Database) FindUserByName(name string) (*user.User, error) {
 	var u user.User
+	if name == "" {
+		return nil, storage.UserDoesntExist
+	}
 	if s.db.Where("name = ?", name).First(&u).RecordNotFound() {
 		return nil, storage.UserDoesntExist
 	}

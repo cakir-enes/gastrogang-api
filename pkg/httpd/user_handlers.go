@@ -60,10 +60,15 @@ func registerUser(repo user.Repository) gin.HandlerFunc {
 
 func loginUser(repo user.Repository) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var json user.User
+		type req struct {
+			Name     string `json:"name" binding:"required"`
+			Password string `json:"password" binding:"required"`
+		}
+		var json req
 		err := c.BindJSON(&json)
 		if err != nil {
-			fmt.Println(err)
+			c.AbortWithStatusJSON(http.StatusBadRequest, failResp("Problems parsing JSON"))
+			return
 		}
 		usr, err := repo.FindUserByName(json.Name)
 		if err != nil {

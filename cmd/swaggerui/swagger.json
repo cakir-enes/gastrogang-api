@@ -174,8 +174,8 @@
             "Bearer": []
           }
         ],
-        "description": "Returns a user based on a single ID, if the user does not have access to the pet",
-        "summary": "Fetch recipe by ID",
+        "description": "Delete recipe by ID.",
+        "summary": "Delete recipe by ID",
         "tags": [
           "recipe"
         ],
@@ -223,7 +223,7 @@
           {
             "name": "id",
             "in": "path",
-            "description": "ID of recipe to fetch",
+            "description": "ID of recipe to update",
             "required": true,
             "type": "integer",
             "format": "uint"
@@ -287,7 +287,7 @@
         "tags": [
           "recipe"
         ],
-        "summary": "Find all recipes that a logged in user have",
+        "summary": "Fetch all recipes of logged in user",
         "description": "",
         "operationId": "fetchRecipes",
         "produces": [
@@ -314,7 +314,7 @@
         "tags": [
           "recipe"
         ],
-        "summary": "Adds recipe to users recipes",
+        "summary": "Save recipe",
         "description": "",
         "consumes": [
           "application/json"

@@ -32,7 +32,13 @@ func (s *Database) DeleteRecipeByID(id uint) error {
 	return nil
 }
 
-func (s *Database) UpdateRecipe(recipe *recipe.Recipe) error {
-	s.db.Save(recipe)
+func (s *Database) UpdateRecipe(newRecipe *recipe.Recipe) error {
+
+	if s.db.Model(newRecipe).Updates(
+		recipe.Recipe{
+			Name: newRecipe.Name, Steps: newRecipe.Steps, Details: newRecipe.Details, Ingredients: newRecipe.Ingredients,
+		}).RecordNotFound() {
+		return errors.New("RecipeDoesntExist")
+	}
 	return nil
 }

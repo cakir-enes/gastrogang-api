@@ -4,10 +4,12 @@ import (
 	"context"
 	"gastrogang-api/pkg/recipe"
 	"gastrogang-api/pkg/user"
-	"github.com/gin-contrib/cors"
-	"google.golang.org/appengine/log"
 	"net/http"
 	"os"
+	"time"
+
+	"github.com/gin-contrib/cors"
+	"google.golang.org/appengine/log"
 
 	"github.com/gin-gonic/gin"
 )
@@ -33,13 +35,13 @@ func (s *server) Start() {
 
 func (s *server) initRoutes() {
 	s.router.Static("/swagger", "cmd/swaggerui")
-	s.router.Use(cors.Default())
+	s.router.Use(corsCfg())
 	s.router.GET("/", func(c *gin.Context) {
 		c.Redirect(http.StatusPermanentRedirect, "/swagger")
 		c.Abort()
 	})
 	v1 := s.router.Group("/api/v1")
-	v1.Use(cors.Default())
+	v1.Use(corsCfg())
 	v1.Use(user.JwtAuthentication())
 	{
 		v1.POST("/register", registerUser(s.userRepo))
@@ -52,4 +54,14 @@ func (s *server) initRoutes() {
 		v1.DELETE("/recipes/:id", deleteRecipeByID(s.recipeRepo))
 		v1.PUT("/recipes/:id", updateRecipeByID(s.recipeRepo))
 	}
+}
+
+func corsCfg() gin.HandlerFunc {
+	return cors.New(cors.Config{
+		AllowAllOrigins:  true,
+		AllowMethods:     []string{"GET", "PUT", "POST", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Authorization", "Content-Type", "Content-Length"},
+		MaxAge:           12 * time.Hour,
+		AllowCredentials: false,
+	})
 }

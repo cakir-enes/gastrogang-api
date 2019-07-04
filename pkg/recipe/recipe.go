@@ -21,4 +21,6 @@ type Repository interface {
 	SaveRecipe(recipe *Recipe) error
 	DeleteRecipeByID(id uint) error
 	UpdateRecipe(recipe *Recipe) error
+	LikeRecipe(recId uint, userId uint) error
+	DislikeRecipe(id uint, userId uint) error
 }

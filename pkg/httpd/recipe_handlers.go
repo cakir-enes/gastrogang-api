@@ -102,6 +102,46 @@ func updateRecipeByID(repo recipe.Repository) gin.HandlerFunc {
 	}
 }
 
+func likeRecipeByID(repo recipe.Repository) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		userId, err := extractIdFromCtx(c)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, failResp(err.Error()))
+			return
+		}
+		id, err := strconv.ParseUint(c.Param("id"), 10, 32)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, failResp("Something went wrong"))
+			return
+		}
+		err = repo.LikeRecipe(uint(id), userId)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, failResp(err.Error()))
+		}
+		c.Status(http.StatusOK)
+	}
+}
+
+func dislikeRecipeByID(repo recipe.Repository) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		userId, err := extractIdFromCtx(c)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, failResp(err.Error()))
+			return
+		}
+		id, err := strconv.ParseUint(c.Param("id"), 10, 32)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, failResp("Something went wrong"))
+			return
+		}
+		err = repo.DislikeRecipe(uint(id), userId)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, failResp(err.Error()))
+		}
+		c.Status(http.StatusOK)
+	}
+}
+
 func findRecipeCheckAuthor(c *gin.Context, repo recipe.Repository) (*recipe.Recipe, error) {
 	userId, err := extractIdFromCtx(c)
 	if err != nil {

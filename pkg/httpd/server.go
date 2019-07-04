@@ -53,6 +53,9 @@ func (s *server) initRoutes() {
 		v1.GET("/recipes/:id", getRecipeByID(s.recipeRepo))
 		v1.DELETE("/recipes/:id", deleteRecipeByID(s.recipeRepo))
 		v1.PUT("/recipes/:id", updateRecipeByID(s.recipeRepo))
+
+		v1.POST("/recipes/:id/like", likeRecipeByID(s.recipeRepo))
+		v1.POST("/recipes/:id/dislike", dislikeRecipeByID(s.recipeRepo))
 	}
 }
 

@@ -49,6 +49,7 @@ func (s *server) initRoutes() {
 
 		v1.GET("/recipes", getAllRecipes(s.recipeRepo))
 		v1.POST("/recipes", saveRecipe(s.recipeRepo))
+		v1.GET("/search", getRecipeByTags(s.recipeRepo))
 
 		v1.GET("/recipes/:id", getRecipeByID(s.recipeRepo))
 		v1.DELETE("/recipes/:id", deleteRecipeByID(s.recipeRepo))

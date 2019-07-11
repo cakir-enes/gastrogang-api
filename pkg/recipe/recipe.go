@@ -11,6 +11,7 @@ type Recipe struct {
 	Name        string         `json:"name"`
 	Steps       pq.StringArray `json:"steps" gorm:"type:varchar(100)[]"`
 	Ingredients pq.StringArray `json:"ingredients" gorm:"type:varchar(100)[]"`
+	Tags        pq.StringArray `json:"tags" gorm:"type:varchar(100)[]"`
 	Details     string         `json:"details"`
 	AuthorID    uint           `json:"authorid"`
 }
@@ -23,4 +24,5 @@ type Repository interface {
 	UpdateRecipe(recipe *Recipe) error
 	LikeRecipe(recId uint, userId uint) error
 	DislikeRecipe(id uint, userId uint) error
+	FindRecipeByTags(tags []string) ([]Recipe, error)
 }

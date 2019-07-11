@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	"bytes"
 	"errors"
 	"gastrogang-api/pkg/recipe"
 )
@@ -85,6 +86,32 @@ func (s *Database) DislikeRecipe(recId uint, userId uint) error {
 		}
 	}
 	return errors.New("User never liked this")
+}
+
+func (s *Database) FindRecipeByTags(tags []string) ([]recipe.Recipe, error) {
+	var recipes []recipe.Recipe
+
+	formatPgArr := func(s []string) string {
+		var buf bytes.Buffer
+		buf.WriteString(`ARRAY[`)
+
+		for i, tag := range tags {
+			if i == len(tags)-1 {
+				buf.WriteString(`'` + tag + `']::varchar[]`)
+			} else {
+				buf.WriteString(`'` + tag + "',")
+			}
+
+		}
+		result := buf.String()
+		return result
+	}
+
+	pgArr := formatPgArr(tags)
+	if err := s.db.Raw("SELECT * FROM recipes WHERE tags @> " + pgArr).Scan(&recipes).Error; err != nil {
+		return nil, err
+	}
+	return recipes, nil
 }
 
 func remove(s []int64, i int) []int64 {

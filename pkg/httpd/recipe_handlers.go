@@ -2,6 +2,7 @@ package httpd
 
 import (
 	"errors"
+	"fmt"
 	"gastrogang-api/pkg/recipe"
 	"gastrogang-api/pkg/storage"
 	"net/http"
@@ -37,6 +38,30 @@ func getRecipeByID(repo recipe.Repository) gin.HandlerFunc {
 			return
 		}
 		c.JSON(http.StatusOK, rec)
+	}
+}
+
+func getRecipeByTags(repo recipe.Repository) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		tags := c.Request.URL.Query()["tag"]
+		fmt.Printf("Tags %v len: %d \n", tags, len(tags))
+		recipes, err := repo.FindRecipeByTags(tags)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, failResp(err.Error()))
+			return
+		}
+		userId, err := extractIdFromCtx(c)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, failResp(err.Error()))
+			return
+		}
+		userRecs := []recipe.Recipe{}
+		for _, rec := range recipes {
+			if rec.AuthorID == userId {
+				userRecs = append(userRecs, rec)
+			}
+		}
+		c.JSON(http.StatusOK, userRecs)
 	}
 }
 

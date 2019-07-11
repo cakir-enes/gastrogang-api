@@ -15,7 +15,9 @@ func main() {
 	}
 
 	repo := postgres.NewPgDB()
+
 	defer repo.Close()
+
 	server := httpd.NewServer(repo, repo)
 	server.Start()
 }

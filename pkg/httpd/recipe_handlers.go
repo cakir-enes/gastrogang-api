@@ -1,14 +1,14 @@
 package httpd
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"gastrogang-api/pkg/recipe"
 	"gastrogang-api/pkg/storage"
+	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
-
-	"github.com/gin-gonic/gin"
 )
 
 var failResp = func(msg string) interface{} {
@@ -27,7 +27,7 @@ func getAllRecipes(repo recipe.Repository) gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, failResp(err.Error()))
 			return
 		}
-		c.JSON(http.StatusOK, recipes)
+		c.JSON(http.StatusOK, appendLikeCount(recipes, repo))
 	}
 }
 
@@ -37,7 +37,7 @@ func getRecipeByID(repo recipe.Repository) gin.HandlerFunc {
 		if err != nil {
 			return
 		}
-		c.JSON(http.StatusOK, rec)
+		c.JSON(http.StatusOK, appendLikeCount([]recipe.Recipe{*rec}, repo)[0])
 	}
 }
 
@@ -61,8 +61,27 @@ func getRecipeByTags(repo recipe.Repository) gin.HandlerFunc {
 				userRecs = append(userRecs, rec)
 			}
 		}
-		c.JSON(http.StatusOK, userRecs)
+		c.JSON(http.StatusOK, appendLikeCount(userRecs, repo))
 	}
+}
+
+func appendLikeCount(recipes []recipe.Recipe, repo recipe.Repository) []map[string]interface{} {
+
+	var resps []map[string]interface{}
+
+	for _, rec := range recipes {
+		like, err := repo.FindLikeOfRecipe(rec.ID)
+		var resp map[string]interface{}
+		recJson, _ := json.Marshal(rec)
+		json.Unmarshal(recJson, &resp)
+		if err != nil {
+			resp["like"] = recipe.Like{Count: 0}
+		} else {
+			resp["like"] = like
+		}
+		resps = append(resps, resp)
+	}
+	return resps
 }
 
 func saveRecipe(repo recipe.Repository) gin.HandlerFunc {

@@ -25,4 +25,5 @@ type Repository interface {
 	LikeRecipe(recId uint, userId uint) error
 	DislikeRecipe(id uint, userId uint) error
 	FindRecipeByTags(tags []string) ([]Recipe, error)
+	FindLikeOfRecipe(id uint) (*Like, error)
 }

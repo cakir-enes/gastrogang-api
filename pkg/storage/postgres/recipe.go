@@ -88,6 +88,14 @@ func (s *Database) DislikeRecipe(recId uint, userId uint) error {
 	return errors.New("User never liked this")
 }
 
+func (s *Database) FindLikeOfRecipe(recId uint) (*recipe.Like, error) {
+	var like recipe.Like
+	if s.db.Where("recipe_id = ?", recId).Find(&like).RecordNotFound() {
+		return nil, errors.New("NoLikeFound")
+	}
+	return &like, nil
+}
+
 func (s *Database) FindRecipeByTags(tags []string) ([]recipe.Recipe, error) {
 	var recipes []recipe.Recipe
 

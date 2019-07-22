@@ -9,9 +9,8 @@ import (
 	"time"
 
 	"github.com/gin-contrib/cors"
-	"google.golang.org/appengine/log"
-
 	"github.com/gin-gonic/gin"
+	"google.golang.org/appengine/log"
 )
 
 type server struct {
@@ -57,6 +56,8 @@ func (s *server) initRoutes() {
 
 		v1.POST("/recipes/:id/like", likeRecipeByID(s.recipeRepo))
 		v1.POST("/recipes/:id/dislike", dislikeRecipeByID(s.recipeRepo))
+		v1.POST("/recipes/:id/photo", uploadPhotos(s.recipeRepo))
+		v1.GET("/recipes/:id/photo", getPhotosByID(s.recipeRepo))
 	}
 }
 

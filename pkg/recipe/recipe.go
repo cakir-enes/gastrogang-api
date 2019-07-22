@@ -26,4 +26,6 @@ type Repository interface {
 	DislikeRecipe(id uint, userId uint) error
 	FindRecipeByTags(tags []string) ([]Recipe, error)
 	FindLikeOfRecipe(id uint) (*Like, error)
+	SavePhoto(photo *Photo) error
+	GetPhotosByID(id uint) ([]Photo, error)
 }

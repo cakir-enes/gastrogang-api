@@ -19,7 +19,7 @@ func NewPgDB() *Database {
 	if err != nil {
 		log.Fatal("Cant connect to DB ", err.Error())
 	}
-	db = db.AutoMigrate(&user.User{}, &recipe.Recipe{}, &recipe.Like{})
+	db = db.AutoMigrate(&user.User{}, &recipe.Recipe{}, &recipe.Like{}, &recipe.Photo{})
 	return &Database{db}
 }
 

@@ -122,6 +122,17 @@ func (s *Database) FindRecipeByTags(tags []string) ([]recipe.Recipe, error) {
 	return recipes, nil
 }
 
+func (s *Database) SavePhoto(photo *recipe.Photo) error {
+	err := s.db.Create(photo).Error
+	return err
+}
+
+func (s *Database) GetPhotosByID(id uint) ([]recipe.Photo, error) {
+	var photos []recipe.Photo
+	s.db.Where("recipe_id = ?", id).Find(&photos)
+	return photos, nil
+}
+
 func remove(s []int64, i int) []int64 {
 	s[len(s)-1], s[i] = s[i], s[len(s)-1]
 	return s[:len(s)-1]

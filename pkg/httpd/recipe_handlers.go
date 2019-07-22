@@ -1,7 +1,6 @@
 package httpd
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"gastrogang-api/pkg/recipe"
@@ -88,25 +87,6 @@ func getRecipeByTags(repo recipe.Repository) gin.HandlerFunc {
 	}
 }
 
-func appendLikeCount(recipes []recipe.Recipe, repo recipe.Repository) []map[string]interface{} {
-
-	var resps []map[string]interface{}
-
-	for _, rec := range recipes {
-		like, err := repo.FindLikeOfRecipe(rec.ID)
-		var resp map[string]interface{}
-		recJson, _ := json.Marshal(rec)
-		json.Unmarshal(recJson, &resp)
-		if err != nil {
-			resp["like"] = recipe.Like{Count: 0}
-		} else {
-			resp["like"] = like
-		}
-		resps = append(resps, resp)
-	}
-	return resps
-}
-
 func saveRecipe(repo recipe.Repository) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id, err := extractIdFromCtx(c)
@@ -166,86 +146,6 @@ func updateRecipeByID(repo recipe.Repository) gin.HandlerFunc {
 
 		repo.UpdateRecipe(&json)
 		c.Status(http.StatusOK)
-	}
-}
-
-func likeRecipeByID(repo recipe.Repository) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		userId, err := extractIdFromCtx(c)
-		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, failResp(err.Error()))
-			return
-		}
-		id, err := strconv.ParseUint(c.Param("id"), 10, 32)
-		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, failResp("Something went wrong"))
-			return
-		}
-		err = repo.LikeRecipe(uint(id), userId)
-		if err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, failResp(err.Error()))
-		}
-		c.Status(http.StatusOK)
-	}
-}
-
-func dislikeRecipeByID(repo recipe.Repository) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		userId, err := extractIdFromCtx(c)
-		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, failResp(err.Error()))
-			return
-		}
-		id, err := strconv.ParseUint(c.Param("id"), 10, 32)
-		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, failResp("Something went wrong"))
-			return
-		}
-		err = repo.DislikeRecipe(uint(id), userId)
-		if err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, failResp(err.Error()))
-			return
-		}
-		c.Status(http.StatusOK)
-	}
-}
-
-func uploadPhotos(repo recipe.Repository) gin.HandlerFunc {
-	type Req struct {
-		Photos []recipe.Photo
-	}
-	return func(c *gin.Context) {
-		recipe, err := findRecipeCheckAuthor(c, repo)
-		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, failResp(err.Error()))
-			return
-		}
-		var req Req
-		c.BindJSON(&req)
-		for _, p := range req.Photos {
-			p.RecipeID = recipe.ID
-			err := repo.SavePhoto(&p)
-			if err != nil {
-				c.AbortWithStatusJSON(http.StatusInternalServerError, failResp(err.Error()))
-			}
-		}
-		c.Status(200)
-	}
-}
-
-func getPhotosByID(repo recipe.Repository) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		recipe, err := findRecipeCheckAuthor(c, repo)
-		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, failResp(err.Error()))
-			return
-		}
-		photos, err := repo.GetPhotosByID(recipe.ID)
-		if err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, failResp(err.Error()))
-			return
-		}
-		c.JSON(http.StatusOK, photos)
 	}
 }
 

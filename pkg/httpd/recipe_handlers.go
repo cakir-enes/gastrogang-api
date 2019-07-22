@@ -2,7 +2,6 @@ package httpd
 
 import (
 	"errors"
-	"fmt"
 	"gastrogang-api/pkg/recipe"
 	"gastrogang-api/pkg/storage"
 	"github.com/gin-gonic/gin"
@@ -66,7 +65,7 @@ func getRecipeByID(repo recipe.Repository) gin.HandlerFunc {
 func getRecipeByTags(repo recipe.Repository) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tags := c.Request.URL.Query()["tag"]
-		fmt.Printf("Tags %v len: %d \n", tags, len(tags))
+		//fmt.Printf("Tags %v len: %d \n", tags, len(tags))
 		recipes, err := repo.FindRecipeByTags(tags)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, failResp(err.Error()))

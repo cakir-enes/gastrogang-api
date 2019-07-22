@@ -277,6 +277,169 @@
         }
       }
     },
+    "/recipes/{id}/toggle-publicity": {
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "recipe"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of recipe to toggle publicity",
+            "required": true,
+            "type": "integer",
+            "format": "uint"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Private/Public",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    },
+    "/recipes/{id}/like": {
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "recipe/like"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of recipe to like",
+            "required": true,
+            "type": "integer",
+            "format": "uint"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "400": {
+            "description": "User has already liked"
+          }
+        }
+      }
+    },
+    "/recipes/{id}/dislike": {
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "recipe/like"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of recipe to like",
+            "required": true,
+            "type": "integer",
+            "format": "uint"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "400": {
+            "description": "User never liked this"
+          }
+        }
+      }
+    },
+    "/recipes/{id}/photo": {
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "recipe/photo"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of recipe to add photo",
+            "required": true,
+            "type": "integer",
+            "format": "uint"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Photos of recipe",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Photo"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "recipe/photo"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of recipe to add photo",
+            "required": true,
+            "type": "integer",
+            "format": "uint"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Photos of recipe",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Photo"
+              }
+            }
+          }
+        }
+      }
+    },
     "/recipes": {
       "get": {
         "security": [
@@ -370,6 +533,43 @@
           }
         }
       }
+    },
+    "/search": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "recipe"
+        ],
+        "summary": "Search recipe by tags",
+        "description": "",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "tag",
+            "in": "query",
+            "description": "Tags that a recipe should have (they are ORed), api/v1/search?tag=lazy&fat",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success, list of matching recipes",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Recipe"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -403,6 +603,19 @@
           "items": {
             "type": "string"
           }
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "ispublic": {
+          "type": "boolean",
+          "default": false
+        },
+        "like": {
+          "$ref": "#/definitions/Like"
         }
       }
     },
@@ -420,6 +633,34 @@
         },
         "id": {
           "type": "integer"
+        }
+      }
+    },
+    "Like": {
+      "type": "object",
+      "properties": {
+        "count": {
+          "type": "integer"
+        },
+        "AuthorIDs": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        }
+      }
+    },
+    "Photo": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "example": "step1"
+        },
+        "img": {
+          "type": "string",
+          "example": "<base 64 encoding of an image>",
+          "description": "base 64 string encoding of an image"
         }
       }
     }

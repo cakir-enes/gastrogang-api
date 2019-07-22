@@ -14,6 +14,7 @@ type Recipe struct {
 	Tags        pq.StringArray `json:"tags" gorm:"type:varchar(100)[]"`
 	Details     string         `json:"details"`
 	AuthorID    uint           `json:"authorid"`
+	IsPublic    bool           `json:"ispublic"`
 }
 
 type Repository interface {
@@ -28,4 +29,5 @@ type Repository interface {
 	FindLikeOfRecipe(id uint) (*Like, error)
 	SavePhoto(photo *Photo) error
 	GetPhotosByID(id uint) ([]Photo, error)
+	TogglePublicity(id uint) (bool, error)
 }

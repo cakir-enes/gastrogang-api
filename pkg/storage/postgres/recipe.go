@@ -127,6 +127,15 @@ func (s *Database) SavePhoto(photo *recipe.Photo) error {
 	return err
 }
 
+func (s *Database) TogglePublicity(id uint) (bool, error) {
+	var rec recipe.Recipe
+	if s.db.Find(&rec).RecordNotFound() {
+		return false, errors.New("RecipeDoesntExist")
+	}
+	rec.IsPublic = !rec.IsPublic
+	return rec.IsPublic, s.db.Save(&rec).Error
+}
+
 func (s *Database) GetPhotosByID(id uint) ([]recipe.Photo, error) {
 	var photos []recipe.Photo
 	s.db.Where("recipe_id = ?", id).Find(&photos)

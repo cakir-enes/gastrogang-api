@@ -58,6 +58,7 @@ func (s *server) initRoutes() {
 		v1.POST("/recipes/:id/dislike", dislikeRecipeByID(s.recipeRepo))
 		v1.POST("/recipes/:id/photo", uploadPhotos(s.recipeRepo))
 		v1.GET("/recipes/:id/photo", getPhotosByID(s.recipeRepo))
+		v1.POST("/recipes/:id/toggle-publicity", togglePublicity(s.recipeRepo))
 	}
 }
 

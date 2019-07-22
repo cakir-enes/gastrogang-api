@@ -33,9 +33,32 @@ func getAllRecipes(repo recipe.Repository) gin.HandlerFunc {
 
 func getRecipeByID(repo recipe.Repository) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		rec, err := findRecipeCheckAuthor(c, repo)
+		id, err := strconv.ParseUint(c.Param("id"), 10, 32)
 		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, failResp("Something went wrong"))
 			return
+		}
+		recipeId := uint(id)
+		rec, err := repo.FindRecipeByID(recipeId)
+		if err != nil {
+			if err == storage.ConnectionFailed {
+				c.AbortWithStatusJSON(http.StatusInternalServerError, failResp("Something went wrong"))
+				return
+			}
+			c.AbortWithStatusJSON(http.StatusNotFound, failResp("Recipe Not Found"))
+			return
+		}
+		// If recipe is public other logged in users can view it.
+		if !rec.IsPublic {
+			userId, err := extractIdFromCtx(c)
+			if err != nil {
+				c.AbortWithStatusJSON(http.StatusInternalServerError, failResp(err.Error()))
+				return
+			}
+			if rec.AuthorID != userId {
+				c.AbortWithStatusJSON(http.StatusForbidden, failResp("Bad User."))
+				return
+			}
 		}
 		c.JSON(http.StatusOK, appendLikeCount([]recipe.Recipe{*rec}, repo)[0])
 	}
@@ -223,6 +246,22 @@ func getPhotosByID(repo recipe.Repository) gin.HandlerFunc {
 			return
 		}
 		c.JSON(http.StatusOK, photos)
+	}
+}
+
+func togglePublicity(repo recipe.Repository) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		rec, err := findRecipeCheckAuthor(c, repo)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, failResp(err.Error()))
+			return
+		}
+		isPublic, err := repo.TogglePublicity(rec.ID)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, failResp(err.Error()))
+			return
+		}
+		c.JSON(http.StatusOK, isPublic)
 	}
 }
 

@@ -37,7 +37,7 @@ func (s *Database) UpdateRecipe(newRecipe *recipe.Recipe) error {
 
 	if s.db.Model(newRecipe).Updates(
 		recipe.Recipe{
-			Name: newRecipe.Name, Steps: newRecipe.Steps, Details: newRecipe.Details, Ingredients: newRecipe.Ingredients,
+			Name: newRecipe.Name, Steps: newRecipe.Steps, Details: newRecipe.Details, Ingredients: newRecipe.Ingredients, IsPublic: newRecipe.IsPublic,
 		}).RecordNotFound() {
 		return errors.New("RecipeDoesntExist")
 	}
@@ -129,11 +129,12 @@ func (s *Database) SavePhoto(photo *recipe.Photo) error {
 
 func (s *Database) TogglePublicity(id uint) (bool, error) {
 	var rec recipe.Recipe
-	if s.db.Find(&rec).RecordNotFound() {
+	rec.ID = id
+	if s.db.First(&rec).RecordNotFound() {
 		return false, errors.New("RecipeDoesntExist")
 	}
 	rec.IsPublic = !rec.IsPublic
-	return rec.IsPublic, s.db.Save(&rec).Error
+	return rec.IsPublic, s.db.Model(&rec).Updates(&rec).Error
 }
 
 func (s *Database) GetPhotosByID(id uint) ([]recipe.Photo, error) {

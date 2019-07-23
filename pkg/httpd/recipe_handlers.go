@@ -160,7 +160,7 @@ func togglePublicity(repo recipe.Repository) gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusBadRequest, failResp(err.Error()))
 			return
 		}
-		c.JSON(http.StatusOK, isPublic)
+		c.JSON(http.StatusOK, gin.H{"isPublic": isPublic})
 	}
 }
 

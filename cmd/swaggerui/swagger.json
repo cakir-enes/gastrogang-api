@@ -302,9 +302,14 @@
         ],
         "responses": {
           "200": {
-            "description": "Private/Public",
+            "description": "New value of publicity Private/Public",
             "schema": {
-              "type": "boolean"
+              "type": "object",
+              "properties": {
+                "isPublic": {
+                  "type": "boolean"
+                }
+              }
             }
           }
         }
@@ -388,20 +393,27 @@
             "required": true,
             "type": "integer",
             "format": "uint"
-          }
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "responses": {
-          "200": {
-            "description": "Photos of recipe",
+          },
+          {
+            "in": "body",
+            "name": "photos",
             "schema": {
               "type": "array",
               "items": {
                 "$ref": "#/definitions/Photo"
               }
             }
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Succes"
           }
         }
       },

@@ -14,6 +14,7 @@ type User struct {
 	Name     string `json:"name"`
 	Password string `json:"password"`
 	Token    string `json:"token";sql:"-"`
+	Lifetime int    `json:"lifetime"`
 }
 
 /*

@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"errors"
 	"gastrogang-api/pkg/recipe"
+	"gastrogang-api/pkg/user"
+	"time"
 )
 
 func (s *Database) FindRecipeByID(id uint) (*recipe.Recipe, error) {
@@ -11,14 +13,23 @@ func (s *Database) FindRecipeByID(id uint) (*recipe.Recipe, error) {
 	if s.db.First(&rec, id).RecordNotFound() {
 		return nil, errors.New("RecipeDoesntExist")
 	}
+	if s.isExpired(&rec) {
+		return nil, errors.New("RecipeExipred")
+	}
 	return &rec, nil
 }
 
 func (s *Database) FindRecipesByAuthorID(id uint) ([]recipe.Recipe, error) {
 	var recipes []recipe.Recipe
 	s.db.Where("author_id = ?", id).Find(&recipes)
-	return recipes, nil
 
+	var aliveRecs []recipe.Recipe
+	for _, rec := range recipes {
+		if !s.isExpired(&rec) {
+			aliveRecs = append(aliveRecs, rec)
+		}
+	}
+	return aliveRecs, nil
 }
 
 func (s *Database) SaveRecipe(recipe *recipe.Recipe) error {
@@ -119,7 +130,13 @@ func (s *Database) FindRecipeByTags(tags []string) ([]recipe.Recipe, error) {
 	if err := s.db.Raw("SELECT * FROM recipes WHERE tags @> " + pgArr).Scan(&recipes).Error; err != nil {
 		return nil, err
 	}
-	return recipes, nil
+	var aliveRecs []recipe.Recipe
+	for _, rec := range recipes {
+		if !s.isExpired(&rec) {
+			aliveRecs = append(aliveRecs, rec)
+		}
+	}
+	return aliveRecs, nil
 }
 
 func (s *Database) SavePhoto(photo *recipe.Photo) error {
@@ -135,6 +152,20 @@ func (s *Database) TogglePublicity(id uint) (bool, error) {
 	}
 	rec.IsPublic = !rec.IsPublic
 	return rec.IsPublic, s.db.Model(&rec).Updates(&rec).Error
+}
+
+// remove recipe if its expired
+func (s *Database) isExpired(rec *recipe.Recipe) bool {
+	uid := rec.AuthorID
+	var usr user.User
+	usr.ID = uid
+	s.db.First(&usr)
+	days := usr.Lifetime
+	if time.Now().After(rec.CreatedAt.AddDate(0, 0, days)) {
+		s.db.Delete(&rec)
+		return true
+	}
+	return false
 }
 
 func (s *Database) GetPhotosByID(id uint) ([]recipe.Photo, error) {
